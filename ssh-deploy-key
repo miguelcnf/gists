@@ -1,0 +1,113 @@
+#!/usr/bin/env perl
+#
+# Usage: ssh-deploy-key -h (--hostsfile) PATH_TO_HOSTS_FILE
+#                       -p (--pubkeyfile) PATH_TO_PUBKEY_FILE
+#                       [ -u (--user) USER ]
+#
+# Expects --hostsfile to contain 1 host per line
+# Assumes current user if --user is not given
+#
+
+use strict;
+use warnings;
+use Error qw(:try);
+use Getopt::Long;
+use Net::SSH::Perl;
+
+sub get_passwd {
+  print "Enter password for user $_[0]: ";
+  system('stty','-echo');
+  my $input = <STDIN>;
+  chomp($input);
+  system('stty','echo');
+  print "\n";
+  unless (defined $input and length $input) {
+     die "You must provide a valid password\n";
+  }
+
+  return $input;
+}
+
+sub get_pubkey {
+  my $pubkey_file = $_[0];
+  open (my $fd, $pubkey_file) or die "Cant open file $pubkey_file\n";
+  # expects only 1 pubkey on file
+  #   could have the option to specify which key to deploy...
+  my $pubkey = <$fd>;
+  chomp($pubkey);
+  close $fd;
+
+  return $pubkey;
+}
+
+sub get_cmd {
+  # appends user remote authorized_keys file which could cause duplicates
+  #   should check if the key already exists...
+  my $cmd = "cat >> .ssh/authorized_keys <<EOF
+$_[0]
+EOF";
+
+  return $cmd;
+}
+
+sub get_hosts {
+  my $hosts_file = $_[0];
+  open (my $fd, $hosts_file) or die "Cant open file $hosts_file\n";
+  my @hosts_list = <$fd>;
+  close $fd;
+
+  return @hosts_list;
+}
+
+sub deploy_key {
+  my($hosts_file, $user, $passwd, $deploy_cmd) = @_;
+
+  my @host_list = get_hosts($hosts_file);
+  foreach (@host_list) {
+    chomp($_);
+    my $ssh = Net::SSH::Perl->new($_);
+    $ssh->login($user, $passwd);
+    $ssh->cmd($deploy_cmd);
+    print "Public key installed to $_\n";
+  }
+}
+
+my ($hosts_file, $pubkey_file, $pub_key, $user, $passwd, $deploy_cmd);
+GetOptions(
+  "hostsfile=s"=>\$hosts_file,
+  "pubkeyfile=s"=>\$pubkey_file,
+  "user:s"=>\$user
+  );
+
+unless(!$ARGV[0]) {
+  die "Unknown option provided $ARGV[0]\n";
+}
+
+unless ($hosts_file and $pubkey_file) {
+  die "Usage: ssh-deploy-key -h (--hostsfile) PATH_TO_HOSTS_FILE -p ",
+    "(--pubkeyfile) PATH_TO_PUBKEY_FILE [ -u (--user) USER ]\n\n",
+    "Expects: hosts file to contain 1 host per line\n",
+    "Assumes: current user if no user is given\n";
+}
+
+foreach ($hosts_file, $pubkey_file) {
+  unless (-e $_) {
+    die "File $_ does not exist\n";
+  }
+}
+
+# defaults to the current user
+$user = getpwuid( $< ) if !$user;
+
+try {
+  $passwd = get_passwd($user);
+  $pub_key = get_pubkey($pubkey_file);
+  $deploy_cmd = get_cmd($pub_key);
+  deploy_key($hosts_file, $user, $passwd, $deploy_cmd);
+} catch Error with {
+  my $ex = shift;
+  die "$ex->{-text}\n"
+};
+
+print "Awesome! Now try and ssh to one of those hosts...\n";
+exit 0;
