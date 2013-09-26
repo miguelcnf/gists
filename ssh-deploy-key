@@ -63,7 +63,7 @@ sub deploy_key {
   my @host_list = get_hosts($hosts_file);
   foreach (@host_list) {
     chomp($_);
-    my $ssh = Net::SSH::Perl->new($_, debug => "true", identity_files => $pubkey_file);
+    my $ssh = Net::SSH::Perl->new($_, identity_files => $pubkey_file);
     unless($ssh->login($user, supress_shell => "true")) {
       $ssh->login($user, $passwd);
       $ssh->cmd($deploy_cmd);
