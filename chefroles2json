@@ -8,36 +8,36 @@ options = {}
 
 optparse = OptionParser.new do|opts|
     # Set a banner displayed at the top of the help screen
-        opts.banner = "Usage: chef-roles-to-json.rb [options] role.rb"
+    opts.banner = "Usage: chef-roles-to-json.rb [options] role.rb"
 
-            # This prints the json role to screen
-                options[:verbose] = false
-                    opts.on( '-v', '--verbose', 'Output json result' ) do
-                            options[:verbose] = true
-                                end
+    # This prints the json role to screen
+    options[:verbose] = false
+    opts.on( '-v', '--verbose', 'Output json result' ) do
+        options[:verbose] = true
+    end
 
-                                    # This displays the help screen
-                                        opts.on( '-h', '--help', 'Display this help' ) do
-                                                puts opts
-                                                        exit
-                                                           end
-                                                           end
+    # This displays the help screen
+    opts.on( '-h', '--help', 'Display this help' ) do
+        puts opts
+        exit
+    end
+end
 
 # Parse the command-line
 optparse.parse!
 
 if not ARGV[0] then
-        puts optparse
-            exit 1
-            end
+puts optparse
+    exit 1
+end
 
 # Ruby role to convert
 rb_file = ARGV[0]
 
 if not File.file?(rb_file) then
-        puts "Role #{ARGV[0]} not found"
-            exit 1
-            end
+puts "Role #{ARGV[0]} not found"
+    exit 1
+end
 
 # Convert role
 role = Chef::Role.new
