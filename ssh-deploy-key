@@ -41,8 +41,6 @@ sub get_pubkey {
 }
 
 sub get_cmd {
-  # appends user remote authorized_keys file which could cause duplicates
-  #   should check if the key already exists...
   my $cmd = "cat >> .ssh/authorized_keys <<EOF
 $_[0]
 EOF";
@@ -60,15 +58,18 @@ sub get_hosts {
 }
 
 sub deploy_key {
-  my($hosts_file, $user, $passwd, $deploy_cmd) = @_;
+  my($hosts_file, $user, $passwd, $deploy_cmd, $pubkey_file) = @_;
 
   my @host_list = get_hosts($hosts_file);
   foreach (@host_list) {
     chomp($_);
-    my $ssh = Net::SSH::Perl->new($_);
-    $ssh->login($user, $passwd);
-    $ssh->cmd($deploy_cmd);
-    print "Public key installed to $_\n";
+    my $ssh = Net::SSH::Perl->new($_, debug => "true", identity_files => $pubkey_file);
+    unless($ssh->login($user, supress_shell => "true")) {
+      $ssh->login($user, $passwd);
+      $ssh->cmd($deploy_cmd);
+      print "Public key installed to $_\n";
+    }
+    print "Skipped duplicate key deploy to $_\n";
   }
 }
 
@@ -103,7 +104,7 @@ try {
   $passwd = get_passwd($user);
   $pub_key = get_pubkey($pubkey_file);
   $deploy_cmd = get_cmd($pub_key);
-  deploy_key($hosts_file, $user, $passwd, $deploy_cmd);
+  deploy_key($hosts_file, $user, $passwd, $deploy_cmd, $pubkey_file);
 } catch Error with {
   my $ex = shift;
   die "$ex->{-text}\n"
