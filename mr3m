@@ -19,14 +19,14 @@ my $cipher_text = substr $passwd_decoded64, 16;
 
 # Instantiate decrypter
 my $cipher = Crypt::CBC->new(
-        {
-                    'key'         => $key,
-                            'cipher'      => 'Rijndael',
-                                    'iv'          => $iv,
-                                            'header'      => 'none',
-                                                    'keysize'     => 128/8
-                                                            }
-                                                            );
+{
+  'key' => $key,
+  'cipher' => 'Rijndael',
+  'iv' => $iv,
+  'header' => 'none',
+  'keysize' => 128/8
+}
+);
 
 # Decrypt passwd
 my $passwd_text = $cipher->decrypt($cipher_text);
