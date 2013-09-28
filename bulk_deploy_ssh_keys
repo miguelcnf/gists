@@ -85,7 +85,7 @@ unless(!$ARGV[0]) {
 }
 
 unless ($hosts_file and $pubkey_file) {
-  die "Usage: ssh-deploy-key -h (--hostsfile) PATH_TO_HOSTS_FILE -p ",
+  die "Usage: bulk_deploy_ssh_keys -h (--hostsfile) PATH_TO_HOSTS_FILE -p ",
     "(--pubkeyfile) PATH_TO_PUBKEY_FILE [ -u (--user) USER ]\n\n",
     "Expects: hosts file to contain 1 host per line\n",
     "Assumes: current user if no user is given\n";
