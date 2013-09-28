@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 #
-# Usage: ssh-deploy-key -h (--hostsfile) PATH_TO_HOSTS_FILE
-#                       -p (--pubkeyfile) PATH_TO_PUBKEY_FILE
-#                       [ -u (--user) USER ]
+# Usage: bulk_deploy_ssh_keys -h (--hostsfile) PATH_TO_HOSTS_FILE
+#                             -p (--pubkeyfile) PATH_TO_PUBKEY_FILE
+#                             [ -u (--user) USER ]
 #
 # Expects --hostsfile to contain 1 host per line
 # Assumes current user if --user is not given

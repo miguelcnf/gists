@@ -8,7 +8,7 @@ options = {}
 
 optparse = OptionParser.new do|opts|
     # Set a banner displayed at the top of the help screen
-    opts.banner = "Usage: chef-roles-to-json.rb [options] role.rb"
+    opts.banner = "Usage: chef_roles_2_json [options] role.rb"
 
     # This prints the json role to screen
     options[:verbose] = false
